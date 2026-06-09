@@ -1,0 +1,28 @@
+@page
+@model WebApplication1.Pages.IndexModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Characters</title>
+</head>
+<body>
+    <h1>Characters</h1>
+
+    <ul>
+    @foreach (var c in Model.Characters)
+    {
+        <li>@c.Id - @c.Name</li>
+    }
+    </ul>
+
+    <form method="post">
+        @Html.AntiForgeryToken()
+        <input type="text" name="Name" placeholder="Name" required maxlength="100" />
+        <button type="submit">Add</button>
+    </form>
+
+    
+</body>
+</html>
