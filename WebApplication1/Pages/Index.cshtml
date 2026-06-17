@@ -6,23 +6,96 @@
 <head>
     <meta charset="utf-8" />
     <title>Characters</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+        th { background-color: #f0f0f0; }
+        input[type=text] { padding: 6px; width: 200px; }
+        button { padding: 6px 12px; margin-left: 4px; cursor: pointer; }
+        .btn-delete { background-color: #e74c3c; color: white; border: none; }
+        .btn-edit { background-color: #3498db; color: white; border: none; }
+        .btn-save { background-color: #2ecc71; color: white; border: none; }
+        .edit-row td { background-color: #fffbe6; }
+        #status { font-size: 12px; color: gray; margin-bottom: 10px; }
+    </style>
 </head>
 <body>
     <h1>Characters</h1>
+    <div id="status">Łączenie z SignalR...</div>
 
-    <ul>
-    @foreach (var c in Model.Characters)
-    {
-        <li>@c.Id - @c.Name</li>
-    }
-    </ul>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+        @foreach (var c in Model.Characters)
+        {
+            if (Model.EditId == c.Id)
+            {
+                <tr class="edit-row">
+                    <td>@c.Id</td>
+                    <td>
+                        <form method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="EditId" value="@c.Id" />
+                            <input type="text" name="EditName" value="@c.Name" required maxlength="100" />
+                            <button type="submit" formaction="?handler=Save" class="btn-save">Save</button>
+                        </form>
+                    </td>
+                    <td></td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td>@c.Id</td>
+                    <td>@c.Name</td>
+                    <td>
+                        <form method="get" style="display:inline;">
+                            <input type="hidden" name="editId" value="@c.Id" />
+                            <button type="submit" class="btn-edit">Edit</button>
+                        </form>
+                        <form method="post" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="DeleteId" value="@c.Id" />
+                            <button type="submit" formaction="?handler=Delete" class="btn-delete">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+    </table>
 
+    <h3>Add new character</h3>
     <form method="post">
         @Html.AntiForgeryToken()
         <input type="text" name="Name" placeholder="Name" required maxlength="100" />
         <button type="submit">Add</button>
     </form>
 
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/characterHub")
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("Refresh", function () {
+            // Inny użytkownik coś zmienił - przeładuj stronę
+            location.reload();
+        });
+
+        connection.start()
+            .then(() => {
+                document.getElementById("status").textContent = "SignalR: połączono ✓";
+            })
+            .catch(err => {
+                document.getElementById("status").textContent = "SignalR: błąd połączenia";
+                console.error(err);
+            });
+    </script>
 </body>
 </html>

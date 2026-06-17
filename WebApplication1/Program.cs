@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Context;
 using WebApplication1.Middleware;
 using WebApplication1;
+using WebApplication1.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
 
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR();
 
 // Swagger for API exploration
 builder.Services.AddEndpointsApiExplorer();
@@ -48,5 +50,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapRazorPages();
+app.MapHub<CharacterHub>("/characterHub");
 
 app.Run();
